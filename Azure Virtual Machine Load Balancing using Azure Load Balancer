@@ -1,0 +1,154 @@
+Here's a detailed step-by-step guide to complete the project using the Azure portal. This includes creating a public Azure Load Balancer, configuring a backend pool with two virtual machines, and setting up Azure Bastion, a NAT Gateway, a virtual network, and necessary subnets.
+
+ Step 1: Create a Resource Group
+
+1. Navigate to the Azure Portal:
+   - Go to the [Azure Portal](https://portal.azure.com/).
+   
+2. Create a Resource Group:
+   - Click on Create a resource > Resource group.
+   - Fill in the required details:
+     - Subscription: Select your subscription.
+     - Resource group: Enter a name (e.g., `MyResourceGroup`).
+     - Region: Select a region.
+   - Click Review + create and then Create.
+
+ Step 2: Create a Virtual Network and Subnets
+
+1. Create a Virtual Network:
+   - Go to Create a resource > Networking > Virtual network.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyVNet`).
+     - Address space: Enter an address range (e.g., `10.0.0.0/16`).
+     - Resource group: Select the previously created resource group.
+     - Region: Select the same region as the resource group.
+   - Add two subnets:
+     - Subnet-1: `10.0.1.0/24` (for VMs)
+     - Subnet-2: `10.0.2.0/24` (for NAT Gateway)
+   - Click Review + create and then Create.
+
+ Step 3: Create Virtual Machines
+
+1. Create VM 1:
+   - Go to Create a resource > Compute > Virtual machine.
+   - Fill in the required details:
+     - Resource group: Select the previously created resource group.
+     - VM name: Enter a name (e.g., `VM1`).
+     - Region: Select the same region.
+     - Availability options: No infrastructure redundancy required.
+     - Image: Select the OS image (e.g., Ubuntu Server 20.04 LTS).
+     - Size: Choose an appropriate size.
+     - Authentication type: Select the authentication type and provide credentials.
+     - Virtual network: Select the previously created virtual network.
+     - Subnet: Select `Subnet-1`.
+     - Public IP: None.
+   - Click Review + create and then Create.
+
+2. Repeat for VM 2:
+   - Follow the same steps as VM 1, but name it `VM2`.
+
+ Step 4: Create a Public IP Address for Load Balancer
+
+1. Create a Public IP Address:
+   - Go to Create a resource > Networking > Public IP address.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyPublicIP`).
+     - Region: Select the same region.
+     - SKU: Standard.
+     - Assignment: Static.
+   - Click Review + create and then Create.
+
+ Step 5: Create an Azure Load Balancer
+
+1. Create Load Balancer:
+   - Go to Create a resource > Networking > Load Balancer.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyLoadBalancer`).
+     - Region: Select the same region.
+     - SKU: Standard.
+     - Type: Public.
+     - Public IP address: Select the previously created public IP.
+   - Click Review + create and then Create.
+
+ Step 6: Configure Backend Pool for Load Balancer
+
+1. Configure Backend Pool:
+   - Navigate to the Load Balancer.
+   - Click on Backend pools > + Add.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyBackendPool`).
+     - Virtual network: Select the previously created virtual network.
+     - Backend pool configurations: Select `IP address` and add the private IP addresses of `VM1` and `VM2`.
+   - Click Add.
+
+ Step 7: Create Health Probe
+
+1. Create Health Probe:
+   - In the Load Balancer, click on Health probes > + Add.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyHealthProbe`).
+     - Protocol: TCP.
+     - Port: 80.
+     - Interval: 5.
+     - Unhealthy threshold: 2.
+   - Click Add.
+
+ Step 8: Create Load Balancer Rule
+
+1. Create Load Balancer Rule:
+   - In the Load Balancer, click on Load balancing rules > + Add.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyLoadBalancingRule`).
+     - IP Version: IPv4.
+     - Frontend IP address: Select the previously created public IP.
+     - Backend pool: Select the previously created backend pool.
+     - Protocol: TCP.
+     - Port: 80.
+     - Backend port: 80.
+     - Health probe: Select the previously created health probe.
+     - Session persistence: None.
+     - Idle timeout (minutes): 4.
+   - Click Add.
+
+ Step 9: Set Up Azure Bastion
+
+1. Create Bastion Host:
+   - Go to Create a resource > Networking > Bastion.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyBastionHost`).
+     - Region: Select the same region.
+     - Virtual network: Select the previously created virtual network.
+     - Subnet: Add a new subnet with the name `AzureBastionSubnet` and an address range (e.g., `10.0.3.0/24`).
+     - Public IP address: Create a new public IP address.
+   - Click Review + create and then Create.
+
+ Step 10: Set Up NAT Gateway
+
+1. Create NAT Gateway:
+   - Go to Create a resource > Networking > NAT Gateway.
+   - Fill in the required details:
+     - Name: Enter a name (e.g., `MyNATGateway`).
+     - Region: Select the same region.
+     - Public IP addresses: Create or use an existing public IP address.
+   - Click Review + create and then Create.
+
+2. Associate NAT Gateway with Subnet:
+   - Navigate to the NAT Gateway.
+   - Click on Subnets > + Associate.
+   - Select the previously created `Subnet-2`.
+   - Click OK.
+
+ Step 11: Verify the Setup
+
+1. Verify Load Balancer:
+   - Use Azure Bastion to connect to `VM1` and `VM2`.
+   - Ensure both VMs have a web server (e.g., Nginx or Apache) running on port 80.
+   - Access the public IP address of the Load Balancer from your browser to verify traffic distribution between `VM1` and `VM2`.
+
+2. Verify NAT Gateway:
+   - Check that outbound traffic from `VM1` and `VM2` uses the NAT Gateway's public IP.
+
+3. Verify Azure Bastion:
+   - Ensure you can connect securely to `VM1` and `VM2` using Azure Bastion.
+
+By following these steps, you can successfully set up a public Azure Load Balancer with a backend pool of two VMs, along with Azure Bastion, a NAT Gateway, a virtual network, and the necessary subnets. This setup ensures secure management and efficient load distribution for your VMs.
